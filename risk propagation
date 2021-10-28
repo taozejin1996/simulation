@@ -1,0 +1,491 @@
+extensions[nw]
+
+
+turtles-own[
+  day
+  day-after-complete
+  component-member
+  quantity-filled
+  quantity-missed
+  num-filled
+  num-missed
+  on-hand-stock
+  back-order
+  inventory-position
+  pipeline
+  order-from-up
+  offer-to-truck
+  order-cost
+  fixed-order-cost
+  inventory-holding-cost
+  back-order-penalty
+  total-cost
+  total-cost-1
+
+  pipeline-CVT
+  pipeline-JFC
+  pipeline-1
+  pipeline-2
+  pipeline-3
+  pipeline-4
+  a
+  b
+  a1
+  a2
+  a3
+  b1
+  b2
+  order-from-honda
+
+  r ;ROP point
+  q
+  r1
+  q1
+  r2
+  q2
+  r3
+  q3
+  r4
+  q4
+  ]
+
+globals[%recoved
+        %infected
+        %exposed
+  days-after-exposure
+  network-clustering
+  closeness-centrality
+  eigenvector-centrality
+  betweenness-centrality
+  demand-today
+
+  setup-price
+  unit-price
+  unit-holding-cost
+  unit-backorder-penalty
+]
+
+
+to setup
+
+  clear-all
+  setup-turtles
+  create-new-network
+  display-labels
+
+  ask patches [set pcolor white]
+end
+
+to display-labels
+   ask turtle 0 [ set label "" ]
+  if show-inventory? [
+    ask turtle 0 [ set label round on-hand-stock set label-color red]]
+end
+
+to create-new-network
+  if new-network-structure = "small world"
+  [
+
+    circular-layout
+  ]
+  if new-network-structure = "preferential attachment"
+  [
+    spring-layout
+  ]
+end
+
+to circular-layout
+  layout-circle sort-on [who] turtles 15
+end
+
+to spring-layout
+  repeat 1000 [ layout-spring turtles links 0.2 5 1 ]
+end
+
+to setup-turtles
+
+
+  crt 1
+   [set inventory-position (on-hand-stock - back-order)
+    set color gray
+    set p p
+    set pipeline n-values (q / production-capacity) [0]
+    set on-hand-stock 30
+    set back-order 0
+    setxy random-xcor random-ycor
+    set size 2.5
+    set shape "person"
+    set total-cost 0
+    set fixed-order-cost 0
+    set variable-order-cost 0
+    set setup-price 100
+    set unit-price 1
+    set unit-holding-cost 0.05
+    set unit-backorder-penalty 2
+  ]
+
+  ask turtle 0 [ set total-cost 0
+                 set a 400
+                 set b 300
+                 set day-after-complete 0
+                 set r re-order-point
+                 set q order-quantity
+                 set pipeline-CVT n-values  (200 / production-capacity-2) [0]
+                 set pipeline-JFC n-values  (200 / production-capacity-2.5) [0]
+                 set fixed-order-cost 0
+                 set size 4 set label "Honda"
+                 set shape "sheep"set label-color black
+                 set inventory-position (on-hand-stock - back-order)
+                 set on-hand-stock 20 set back-order 0 ]
+
+  crt 2
+  [ set inventory-position (on-hand-stock - back-order)
+    setxy random-xcor random-ycor
+    set size 2.5
+    set color gray
+    set shape "house"
+    set total-cost-1 0
+    set fixed-order-cost 0
+    set setup-price 100
+    set unit-price 1
+    set unit-holding-cost 0.05
+    set unit-backorder-penalty 2
+  ]
+
+  ask turtle 1 [ set size 3 create-link-with turtle 0
+                 set label "CVT" set label-color black
+                 set inventory-position (on-hand-stock - back-order)
+                 set on-hand-stock 0 set back-order 0
+                 set a1 900 set a2 900
+                 set order-from-honda 200
+                 set pipeline-1 n-values ( 200 / 50) [0]
+                 set pipeline-2 n-values ( 200 / 50) [0]]
+
+  ask turtle 2 [ set size 3 create-link-with turtle 0
+                 set label "JFC" set label-color black
+                 set inventory-position (on-hand-stock - back-order)
+                 set on-hand-stock 0 set back-order 0
+                 set b1 500 set b2 500
+                 set order-from-honda 200
+                 set pipeline-3 n-values (300 / 100) [0]
+                 set pipeline-4 n-values (300 / 150) [0]]
+
+  crt 5
+   [
+    set inventory-position (on-hand-stock - back-order)
+    set color gray
+    set r2 100
+    set q2 100
+    set order-from-up 100
+    set pipeline n-values (100 / production-capacity-3) [0]
+    set on-hand-stock 500
+    set back-order 0
+    setxy random-xcor random-ycor
+    set size 1.5
+
+  ]
+   ask turtle 3 [ set pipeline n-values (100 / production-capacity-3) [0] set shape "truck" set inventory-position (on-hand-stock - back-order) set on-hand-stock 600 set back-order 0 set order-from-up 200  set production-capacity 50 create-link-with turtle 1  ]
+   ask turtle 4 [ set pipeline n-values (100 / production-capacity-3) [0] set shape "truck" set inventory-position (on-hand-stock - back-order) set on-hand-stock 600 set back-order 0 set order-from-up 200 set production-capacity 50  create-link-with turtle 1  ]
+   ask turtle 5 [ set pipeline n-values (100 / production-capacity-3) [0] set shape "truck" set inventory-position (on-hand-stock - back-order) set on-hand-stock 500 set back-order 0 set order-from-up 200 set production-capacity 50  create-link-with turtle 2  ]
+   ask turtle 6 [ set pipeline n-values (100 / production-capacity-3) [0] set shape "truck" set inventory-position (on-hand-stock - back-order) set on-hand-stock 500 set back-order 0 set order-from-up 300  set production-capacity 50 create-link-with turtle 2  ]
+   ask turtle 7 [ set pipeline n-values (100 / production-capacity-3) [0] set shape "truck" set inventory-position (on-hand-stock - back-order) set on-hand-stock 500 set back-order 0 set order-from-up 300  set production-capacity 50  ]
+
+  reset-ticks
+end
+
+to go
+  if ticks >= 200 [stop]
+  set demand-today daily-demand            ;; demand for every day is different
+  ask turtle 0[
+    receive
+    supply
+    replenish-CVT
+    replenish-JFC
+    ]
+
+  ask turtle 1[
+   receive-1
+   replenish-1
+   replenish-2
+    ]
+
+  ask turtle 2[
+   receive-2
+   replenish-3
+   replenish-4
+   replenish-5
+   ifelse b2 < 0
+  [set color red]
+  [set color grey]
+  ]
+
+  display-labels
+  tick
+end
+
+to-report daily-demand
+;;  report 10
+;;  report random-poisson mean-for-poisson             ;; Here we assume that the daily demand follows the Poisson distribution
+                                                     ;; with mean specified by the user
+ report truncated-normal mean-for-normal std-for-normal lower-bound-for-normal upper-bound-for-normal
+
+end
+
+to-report truncated-normal [mean-value std-value min-value max-value]
+  let random-num random-normal mean-value std-value
+  ifelse random-num > max-value or random-num < min-value
+  [report min-value + random-float (max-value - min-value)]
+  [report random-num]
+end
+
+
+
+
+to-report should-order-from-CVT?
+  report [a] of turtle 0 <= 150
+end
+
+to-report should-order-from-JFC?
+  report b <= 150                  ;; If the inventory position is below reorder point r, we should place an order
+
+end
+
+to-report should-order-from?
+  report a1 <= 300
+end
+
+to-report should-order-from-1?
+  report a2 <= 200
+end
+
+to-report should-order-from-2?
+  report b1 <= 300
+end
+
+to-report should-order-from-3?
+  report b2 <= 300
+end
+
+to receive
+  ifelse back-order > 0
+  [
+    ifelse back-order >= p                     ;; after receiving the order, update on-hand stock and back-orders
+    [
+      set back-order (back-order - p)
+    ]
+    [
+      set back-order 0
+      set on-hand-stock (p - back-order)
+    ]
+
+  ]
+  [
+    set on-hand-stock (on-hand-stock + p)
+  ]
+end
+
+to supply
+  ifelse on-hand-stock >= demand-today
+  [ set demand-today demand-today
+    set on-hand-stock (on-hand-stock - demand-today)
+    set a a - p
+    set b b - p
+    set num-filled num-filled + 1
+    set quantity-filled (quantity-filled + demand-today)               ;; according to today's demand, update the on-hand stock and back-orders
+  ]
+  [
+    set num-missed num-missed + 1                                      ;; if a demand is not fully met, num-missed + 1
+    ifelse on-hand-stock > 0                                           ;; filled demand goes to quantity-filled, unfilled demand goes to quantity-missed
+    [
+      set quantity-filled (quantity-filled + on-hand-stock)
+      set quantity-missed (quantity-missed + demand-today - on-hand-stock)
+
+      set on-hand-stock 0
+      set back-order (demand-today - on-hand-stock)
+    ]
+    [
+      set quantity-missed (quantity-missed + demand-today)
+
+      set back-order (back-order + demand-today)
+    ]
+  ]
+end
+
+to replenish-CVT
+  ifelse should-order-from-CVT? and sum pipeline-CVT = 0[
+    set fixed-order-cost 10 + fixed-order-cost
+    set pipeline-CVT lput q pipeline-CVT
+    ask turtle 1[
+    set a1 a1 - 200
+    set a2 a2 - 200
+    set on-hand-stock  on-hand-stock - order-from-up]
+  ]
+  [
+    set pipeline-CVT lput 0 pipeline-CVT                                      ;; if place an order, put the order quantity q into pipeline list
+  ]
+  set pipeline-CVT but-first pipeline-CVT
+  set a a + first pipeline-CVT
+
+  set inventory-holding-cost inventory-holding-cost + on-hand-stock * 0.05 ;;unit holding cost
+  set back-order-penalty back-order-penalty + back-order * 2 ;;unit backorder penalty
+  set total-cost (fixed-order-cost + variable-order-cost + inventory-holding-cost + back-order-penalty)
+end
+
+to replenish-JFC
+  if [b2] of turtle 2 > 200 [
+  ifelse b <= 150 and sum pipeline-JFC = 0[
+    set fixed-order-cost 10 + fixed-order-cost
+    set pipeline-JFC lput q pipeline-JFC
+    ask turtle 2[
+    set b1 b1 - 200
+    set b2 b2 - 200]]
+    [set pipeline-JFC lput 0 pipeline-JFC]]
+
+  if  [b2] of turtle 2 < 200 [
+  ifelse b <= 150 and sum pipeline-JFC = 0[
+      set fixed-order-cost 10 + fixed-order-cost
+      set pipeline-JFC lput ([b2] of turtle 2) pipeline-JFC
+      ask turtle 2 [set b2 0]]
+    [set pipeline-JFC lput 0 pipeline-JFC]]
+
+  if [b2] of turtle 2 = 0 [
+  ifelse b <= 150 and sum pipeline-JFC = 0[
+    set pipeline-JFC lput 0 pipeline-JFC]
+  [set pipeline-JFC lput 0 pipeline-JFC]]
+
+
+  set pipeline-JFC but-first pipeline-JFC
+  set b b + first pipeline-JFC
+  set inventory-holding-cost inventory-holding-cost + on-hand-stock * 0.05 ;;unit holding cost
+  set back-order-penalty back-order-penalty + back-order * 2 ;;unit backorder penalty
+  set total-cost (fixed-order-cost + inventory-holding-cost + back-order-penalty)
+end
+
+to receive-1
+  ifelse back-order > 0
+  [
+    ifelse back-order >= order-from-honda                     ;; after receiving the order, update on-hand stock and back-orders
+    [
+      set back-order (back-order - order-from-honda)
+    ]
+    [
+      set back-order 0
+      set on-hand-stock (order-from-honda - back-order)
+    ]
+
+  ]
+  [
+    set on-hand-stock (on-hand-stock + order-from-honda)
+
+  ]
+end
+
+to replenish-1
+  ifelse should-order-from? and sum pipeline-1 = 0[
+    set pipeline-1 lput 200 pipeline-1
+    ask turtle 3[
+    set on-hand-stock  on-hand-stock - order-from-up]
+  ]
+  [
+    set pipeline-1 lput 0 pipeline-1                                      ;; if place an order, put the order quantity q into pipeline list
+  ]
+  set pipeline-1 but-first pipeline-1
+  set a1 a1 + first pipeline-1
+
+  set inventory-holding-cost inventory-holding-cost + on-hand-stock * 0.01 ;;unit holding cost
+  set back-order-penalty back-order-penalty + back-order * 2 ;;unit backorder penalty
+  set total-cost-1 (fixed-order-cost + inventory-holding-cost + back-order-penalty)
+end
+
+to replenish-2
+  ifelse should-order-from-1? and sum pipeline-2 = 0[
+    set pipeline-2 lput 200 pipeline-2
+    ask turtle 4[
+    set on-hand-stock  on-hand-stock - order-from-up]
+  ]
+  [
+    set pipeline-2 lput 0 pipeline-2                                      ;; if place an order, put the order quantity q into pipeline list
+  ]
+  set pipeline-2 but-first pipeline-2
+  set a2 a2 + first pipeline-2
+
+  set inventory-holding-cost inventory-holding-cost + on-hand-stock * 0.01 ;;unit holding cost
+  set back-order-penalty back-order-penalty + back-order * 2 ;;unit backorder penalty
+  set total-cost-1 (fixed-order-cost + inventory-holding-cost + back-order-penalty)
+end
+
+
+
+to receive-2
+
+  ifelse back-order > 0
+  [
+    ifelse back-order >= order-from-honda                     ;; after receiving the order, update on-hand stock and back-orders
+    [
+      set back-order (back-order - order-from-honda)
+    ]
+    [
+      set back-order 0
+      set on-hand-stock (order-from-honda - back-order)
+    ]
+
+  ]
+  [
+    set on-hand-stock (on-hand-stock + order-from-honda) ;;;;
+  ]
+end
+
+to replenish-3
+  ifelse should-order-from-2? and sum pipeline-3 = 0[
+    set pipeline-3 lput 300 pipeline-3
+    ask turtle 5[
+    set on-hand-stock  on-hand-stock - order-from-up]
+  ]
+  [
+    set pipeline-3 lput 0 pipeline-3                                      ;; if place an order, put the order quantity q into pipeline list
+  ]
+  set pipeline-3 but-first pipeline-3
+  set b1 b1 + first pipeline-3
+  set inventory-holding-cost inventory-holding-cost + on-hand-stock * 0.01 ;;unit holding cost
+  set back-order-penalty back-order-penalty + back-order * 2 ;;unit backorder penalty
+  set total-cost-1 (fixed-order-cost + inventory-holding-cost + back-order-penalty)
+end
+
+to replenish-4
+  if risk-happen?[
+    ask turtle 6 [set color red]]
+
+  if not risk-happen?[
+  ifelse should-order-from-3? and sum pipeline-4 = 0[
+    set pipeline-4 lput 300 pipeline-4
+    ask turtle 6 [
+    set on-hand-stock  on-hand-stock - order-from-up]
+  ]
+  [
+    set pipeline-4 lput 0 pipeline-4                                      ;; if place an order, put the order quantity q into pipeline list
+  ]
+  set pipeline-4 but-first pipeline-4
+  set b2 b2 + first pipeline-4
+  set inventory-holding-cost inventory-holding-cost + on-hand-stock * 0.01 ;;unit holding cost
+  set back-order-penalty back-order-penalty + back-order * 2 ;;unit backorder penalty
+  set total-cost-1 (fixed-order-cost +  inventory-holding-cost + back-order-penalty)]
+end
+
+to replenish-5
+  if choose-dual-source?[
+    ask turtle 7 [create-link-with turtle 2]
+
+  ifelse should-order-from-3? and sum pipeline-4 = 0[
+    set pipeline-4 lput 300 pipeline-4
+    ask turtle 7 [
+    set on-hand-stock  on-hand-stock - order-from-up]
+  ]
+  [
+    set pipeline-4 lput 0 pipeline-4                                      ;; if place an order, put the order quantity q into pipeline list
+  ]
+  set pipeline-4 but-first pipeline-4
+  set b2 b2 + first pipeline-4
+  set inventory-holding-cost inventory-holding-cost + on-hand-stock * 0.01 ;;unit holding cost
+  set back-order-penalty back-order-penalty + back-order * 2 ;;unit backorder penalty
+  set total-cost-1 (fixed-order-cost + variable-order-cost + inventory-holding-cost + back-order-penalty)]
+end
